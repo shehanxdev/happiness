@@ -53,7 +53,13 @@ export const QuestionScreenWithinMainStack = ({
     const emotion = getEmotion(selectedAnswers.current);
     const date = getCurrentDate();
     await handleOnComplete(emotion, date);
-    navigation.navigate('HomeScreen');
+    setQuestionNumber(1);
+    selectedAnswers.current = new Array(initialQuestions.length);
+    setChosenAnswer('');
+    navigation.navigate('MainStack', {
+      screen: 'HomeScreen',
+      params: { emotion }
+    });
   };
 
   const addToAnswerList = (answer: string) => {

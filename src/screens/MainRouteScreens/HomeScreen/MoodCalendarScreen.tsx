@@ -6,13 +6,13 @@ import { executeQuery } from './../../../services/DB.service';
 import { useFocusEffect } from '@react-navigation/native';
 
 const moodColors = {
-  angry: '#B22222',
+  Angry: '#B22222',
   Happy: '#FFA500',
   Neutral: '#228B22',
   Sad: '#1E90FF'
 };
 
-type Mood = 'angry' | 'Happy' | 'Neutral' | 'Sad';
+type Mood = 'Angry' | 'Happy' | 'Neutral' | 'Sad';
 
 interface EmotionData {
   id: number;
@@ -27,24 +27,31 @@ export const MoodCalendar: React.FC = () => {
     React.useCallback(() => {
       const getData = async () => {
         const sql = `
-      SELECT * FROM Emotions;
-      ORDER BY Id ASC;
+     SELECT *
+FROM Emotions e1
+WHERE e1.id = (
+    SELECT MAX(e2.id)
+    FROM Emotions e2
+    WHERE e2.date = e1.date
+);
     `;
         const result = await executeQuery<EmotionData>(sql, [], false);
         if (Array.isArray(result)) {
+          console.log('Hello');
           setEmotions([...result]);
         } else {
-          console.log('No records found or unexpected result format');
+          console.log('Noo records found or unexpected result format');
         }
       };
       getData();
     }, [])
   );
 
-  const getMarkedDates = (emotions: EmotionData[]): { [key: string]: any } => {
+  const getMarkedDates = (): { [key: string]: any } => {
     const markedDates: { [key: string]: any } = {};
 
-    emotions.forEach(({ emotion, date }) => {
+    emotionsData?.forEach(({ emotion, date }) => {
+      console.log('Hello in ' + emotion + ' and ' + moodColors[emotion]);
       markedDates[date] = {
         customStyles: {
           container: {
@@ -69,7 +76,7 @@ export const MoodCalendar: React.FC = () => {
           key={JSON.stringify(emotionsData)}
           style={tw`border border-gray-200 rounded-lg`}
           markingType={'custom'}
-          markedDates={getMarkedDates(emotionsData)}
+          markedDates={getMarkedDates()}
           firstDay={1}
           theme={{
             textDayFontWeight: 'bold',
@@ -100,7 +107,7 @@ export const MoodCalendar: React.FC = () => {
           <View style={tw`items-center`}>
             <View
               style={[
-                tw`w-6 h-6 bg-[${moodColors.angry}]`,
+                tw`w-6 h-6 bg-[${moodColors.Angry}]`,
                 { borderRadius: 3 }
               ]}
             />

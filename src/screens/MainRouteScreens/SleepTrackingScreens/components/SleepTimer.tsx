@@ -45,7 +45,7 @@ const SleepTimer: React.FC = () => {
     const sql = `
     INSERT INTO SleepInfo (sleepTime, wakeTime, duration, date)
     VALUES ('${startTime}', '${endTime}', ${timeElapsed}, ${getDayOfWeekAsInt()})
-    ON CONFLICT(date) DO UPDATE SET duration = ${timeElapsed};
+    ON CONFLICT(date) DO UPDATE SET duration = ${timeElapsed},sleepTime='${startTime}',wakeTime='${endTime}';
   `;
     const result = await executeQuery(sql, [], true);
     if (result) {

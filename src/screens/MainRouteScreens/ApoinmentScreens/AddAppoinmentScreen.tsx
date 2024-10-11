@@ -49,6 +49,7 @@ export function AddAppointmentScreen({
 
     if (result) {
       Toast.show({ type: 'success', text1: 'Appoinment booked' });
+      navigation.navigate('CurrentAppoinmentListScreen', {});
     }
   };
   return (

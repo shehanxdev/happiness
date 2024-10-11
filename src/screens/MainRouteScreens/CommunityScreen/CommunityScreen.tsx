@@ -10,6 +10,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { getCurrentDate } from '../../../utils/time.util';
 import { executeQuery } from './../../../services/DB.service';
 import { useFocusEffect } from '@react-navigation/native';
+import RNFS from 'react-native-fs';
 interface PostData {
   id: number;
   title: string;
@@ -22,10 +23,10 @@ export const CommunityScreen = () => {
   const [title, setTitle] = useState('');
   const [post, setPost] = useState('');
   const [showConfetti, setShowConfetti] = React.useState(false);
-  const [imagedata, setImagedata] = useState<string>();
+  const [imagePath, setImagePath] = useState<string | null>(null);
   const [postList, setPostList] = useState<PostData[]>();
 
-  useFocusEffect(
+  useEffect(
     React.useCallback(() => {
       const getData = async () => {
         const sql = `
@@ -42,46 +43,56 @@ export const CommunityScreen = () => {
       getData();
     }, [])
   );
+  // Function to save image to the local assets folder
+  const saveImageToLocalAssets = async (originalPath: string) => {
+    try {
+      const newImagePath =
+        `${RNFS.DocumentDirectoryPath}/images/` + `image_${Date.now()}.jpg`;
 
+      // Create directory if it doesn't exist
+      const dirExists = await RNFS.exists(
+        `${RNFS.DocumentDirectoryPath}/images`
+      );
+      if (!dirExists) {
+        await RNFS.mkdir(`${RNFS.DocumentDirectoryPath}/images`);
+      }
+
+      // Move the file to the new directory
+      await RNFS.copyFile(originalPath, newImagePath);
+      console.log('Image saved to:', newImagePath);
+      return newImagePath;
+    } catch (error) {
+      console.log('Error saving image:', error);
+      return null;
+    }
+  };
   const handleImageUpload = async () => {
     const result = await launchImageLibrary({ mediaType: 'photo' });
 
-    if (!result.didCancel && result.assets) {
-      const imageUri = result.assets[0].uri; // URI of the selected image
-      const imageType = result.assets[0].type || 'image/jpeg'; // Get image type, e.g., 'image/jpeg'
-
-      const response = await fetch(imageUri ? imageUri : '');
-      const blob = await response.blob();
-
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result as string; // This will be the full Base64 string
-
-        // Prefix the Base64 string with the proper image type
-        const base64Image = `data:image/${imageType};base64,${
-          base64String.split(',')[1]
-        }`;
-
-        // Now insert the image into the DB
-        setImagedata('base64Image');
-      };
-
-      // Convert blob to Base64
-      reader.readAsDataURL(blob);
+    if (!result.didCancel && result.assets && result.assets[0].uri) {
+      const originalPath = result.assets[0].uri;
+      const newFilePath = await saveImageToLocalAssets(originalPath);
+      if (newFilePath) {
+        setImagePath(newFilePath);
+      }
     }
   };
   const onPost = async () => {
     const sql = `
     INSERT INTO Posts (title, post,Image,date) 
-    VALUES ('${title}', '${post}','${imagedata}','${getCurrentDate()}')
+    VALUES ('${title}', '${post}','${imagePath}','${getCurrentDate()}')
   `;
     const result = await executeQuery(sql, [], true);
     if (result) {
-      setImagedata('');
       Toast.show({ type: 'success', text1: 'Posted' });
     } else {
       Toast.show({ type: 'error', text1: 'Post failed' });
     }
+  };
+
+  const handleOnCancel = () => {
+    setModalVisibility(false);
+    setImagePath('');
   };
   return (
     <View style={tw`flex-1`}>
@@ -129,7 +140,7 @@ export const CommunityScreen = () => {
               <Text style={tw`text-center text-white `}>post </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setModalVisibility(false)}
+              onPress={handleOnCancel}
               style={tw`mt-2 bg-red-500  py-2 px-4 rounded-lg`}>
               <Text style={tw`text-center text-white `}>Cancel</Text>
             </TouchableOpacity>
@@ -143,7 +154,7 @@ export const CommunityScreen = () => {
             <Text style={tw`text-lg font-bold`}>{post.title}</Text>
             <Image
               style={tw`w-100 h-70 m-auto`}
-              source={require('../../../assets//docImages/post.jpg')}
+              source={{ uri: 'file://' + post.Image }}
             />
             <Text style={tw`text-base mb-4`}>{post.post}</Text>
             <View style={tw`flex-row justify-between items-center`}>

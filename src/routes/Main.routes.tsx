@@ -2,19 +2,13 @@ import * as React from 'react';
 
 import { HomeScreen } from '../screens/MainRouteScreens/HomeScreen/HomeScreen';
 
-import {
-  CommunityScreen,
-  VoiceAnalysisScreen,
-  QuestionScreenWithinMainStack,
-  EmotionScreen
-} from '@vs/screens';
+import { CommunityScreen, QuestionScreenWithinMainStack } from '@vs/screens';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   CommunityIconSvg,
   HamburgerIconSvg,
   HomeIconSvg,
   UserIconSvg,
-  VoiceAnalyzeSvgSamll,
   RecommendedTasksSVG,
   SleepMonitorSVG,
   DiarySmallSVG,
@@ -26,6 +20,7 @@ import { SleepAnalysisAndGoalDiaryStackNavigator } from './SleepAnalysis.routes'
 import { GoalDiaryStackNavigator } from './GoalDiary.routes';
 import { AppoinmentStackNavigator } from './AppoinmentStack.routes';
 import { MainStackParamList } from './route.types';
+import { Image } from 'react-native';
 
 const MainStack = createBottomTabNavigator<MainStackParamList>();
 
@@ -92,13 +87,21 @@ export const MainStackNavigator = () => {
             </View>
           );
         },
-        headerTitle: ''
+        headerTitle: () => (
+          <View style={tw` justify-center items-center rounded-full`}>
+            <Image
+              source={require('../assets/images/logo.jpg')} // Replace with your image URL or require('./path/to/your/image.png')
+              style={tw`h-10 w-10 ml-23 rounded-full`} // Adjust size as needed
+              resizeMode="contain"
+            />
+          </View>
+        )
       })}>
       <MainStack.Screen name="HomeScreen" component={HomeScreen} />
-      <MainStack.Screen
+      {/* <MainStack.Screen
         name="QuestionScreen"
         component={QuestionScreenWithinMainStack}
-      />
+      /> */}
       <MainStack.Screen
         name="AppoinmentStack"
         component={AppoinmentStackNavigator}

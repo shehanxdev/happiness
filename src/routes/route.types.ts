@@ -5,8 +5,7 @@ import { DoctorCardProps } from '@vs/screens';
 export type RootStackParamList = {};
 
 export type MainStackParamList = RootStackParamList & {
-  EmotionScreen: { emotion: string };
-  HomeScreen: {};
+  HomeScreen: { emotion: string };
   CommunityScreen: {};
   QuestionsStack: {};
   SleepTrackerScreen: {};

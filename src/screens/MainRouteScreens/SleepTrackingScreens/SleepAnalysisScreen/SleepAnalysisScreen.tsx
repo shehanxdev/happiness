@@ -4,6 +4,7 @@ import tw from 'twrnc';
 import { colors } from '@vs/constants';
 import { SleepChart } from '../components/SleepChart';
 import { executeQuery } from './../../../../services/DB.service';
+import { useFocusEffect } from '@react-navigation/native';
 interface SleepRecord {
   id: number;
   sleepTime: string;
@@ -17,21 +18,24 @@ export function SleepAnalysisScreen() {
   const durationInHours = lastSleepData?.duration
     ? (lastSleepData.duration / 3600).toFixed(1)
     : '0.0';
-  useEffect(() => {
-    const getData = async () => {
-      const sql = `
-      SELECT * FROM SleepInfo;
-      ORDER BY Id ASC;
-    `;
-      const result = await executeQuery<SleepRecord>(sql, [], false);
-      if (Array.isArray(result)) {
-        setLastSleepData(result[result.length - 1]);
-      } else {
-        console.log('No records found or unexpected result format');
-      }
-    };
-    getData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const getData = async () => {
+        const sql = `
+        SELECT * FROM SleepInfo;
+        ORDER BY Id DESC;
+      `;
+        const result = await executeQuery<SleepRecord>(sql, [], false);
+        if (Array.isArray(result)) {
+          console.log(result);
+          setLastSleepData(result[0]);
+        } else {
+          console.log('No records found or unexpected result format');
+        }
+      };
+      getData();
+    }, [])
+  );
   return (
     <ScrollView>
       <View style={tw`my-10 mx-6`}>

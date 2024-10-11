@@ -19,20 +19,18 @@ import { CommonActions } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { ReactNativeModal } from 'react-native-modal';
 import { executeQuery } from '../../../services';
+import { MainStackParamList } from 'src/routes/route.types';
 
-type HomeScreenProps = StackScreenProps<
-  Record<string, object | undefined>,
-  'HomeScreen'
->;
+type HomeScreenProps = StackScreenProps<MainStackParamList, 'HomeScreen'>;
 interface EmotionData {
   id: number;
   emotion: string;
   date: string;
 }
 
-export const HomeScreen = ({ navigation }: HomeScreenProps) => {
+export const HomeScreen = ({ route, navigation }: HomeScreenProps) => {
   const [modalVisibility, setModalVisibility] = useState<boolean>(true);
-  const [emotion, setEmotion] = useState<any>();
+  const [emotion, setEmotion] = useState<string>();
   const resetApp = () => {
     navigation.dispatch(
       CommonActions.reset({
@@ -41,25 +39,12 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
       })
     );
   };
-  useEffect(
-    React.useCallback(() => {
-      const getData = async () => {
-        const sql = `
-      SELECT emotion FROM Emotions;
-      ORDER BY id DESC 
-      LIMIT 1;
-    `;
-        const result = await executeQuery<EmotionData>(sql, [], false);
-        if (Array.isArray(result)) {
-          console.log(result[0].emotion);
-          setEmotion(result[0].emotion);
-        } else {
-          console.log('No records found or unexpected result format');
-        }
-      };
-      getData();
-    }, [])
-  );
+  useEffect(() => {
+    console.log(route.params);
+    if (route.params?.emotion) {
+      setEmotion(route.params.emotion);
+    }
+  }, [route.params?.emotion]);
 
   const getEmotionEmoji = () => {
     if (emotion == 'Happy') {
@@ -158,11 +143,13 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </Text>
           <View style={tw`mb-5 flex-row justify-center gap-10`}>
             <TouchableOpacity
+              onPress={() => navigation.navigate('AppoinmentStack', {})}
               style={tw`flex border-2 bg-white  border-black rounded-lg p-4`}>
               <DoctorSVG />
               <Text style={tw`text-center`}>Visit a doctor</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              onPress={() => navigation.navigate('SleepAnalysisStack', {})}
               style={tw`flex border-2  bg-white  border-black rounded-lg p-4`}>
               <SleepSVG />
               <Text style={tw`text-center`}>Track Sleep</Text>
@@ -176,7 +163,6 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
               <Text style={tw`text-center`}>Mood Calendar</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => navigation.navigate('GoalDiaryStack')}
               style={tw`flex border-2 bg-white  border-black rounded-lg p-4`}>
               <DiarySVG />
               <Text style={tw`text-center`}>Goal Diary</Text>
