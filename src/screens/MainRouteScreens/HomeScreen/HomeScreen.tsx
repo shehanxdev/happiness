@@ -163,6 +163,7 @@ export const HomeScreen = ({ route, navigation }: HomeScreenProps) => {
               <Text style={tw`text-center`}>Mood Calendar</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              onPress={() => navigation.navigate('GoalDiaryStack', {})}
               style={tw`flex border-2 bg-white  border-black rounded-lg p-4`}>
               <DiarySVG />
               <Text style={tw`text-center`}>Goal Diary</Text>
